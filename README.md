@@ -1,1 +1,1 @@
-# Vending-Machine-RestApi
+# Vending Machine
