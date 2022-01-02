@@ -11,6 +11,7 @@ import com.exercise.vendingmachine.repository.ProductRepository;
 import com.exercise.vendingmachine.repository.PurchaseRepository;
 import com.exercise.vendingmachine.repository.UserRepository;
 import com.exercise.vendingmachine.service.VendingMachineService;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,8 @@ import java.util.List;
 
 @Service
 public class VendingMachineServiceImpl implements VendingMachineService {
+
+    private static final Logger LOG = Logger.getLogger(VendingMachineServiceImpl.class);
 
     private final UserRepository userRepository;
 
@@ -44,7 +47,9 @@ public class VendingMachineServiceImpl implements VendingMachineService {
             user.setDeposit(0L);
         }
         user.setDeposit(user.getDeposit() + depositDto.getCoin().getCents());
-        return userRepository.save(user);
+        user = userRepository.saveAndFlush(user);
+        LOG.info("The user deposit has been updated");
+        return user;
     }
 
     @Override
@@ -53,7 +58,9 @@ public class VendingMachineServiceImpl implements VendingMachineService {
         User user = userRepository.findById(userDetailsDto.getUser().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
         user.setDeposit(0L);
-        return userRepository.save(user);
+        user = userRepository.saveAndFlush(user);
+        LOG.info("User Deposit Reset");
+        return user;
     }
 
     @Override
@@ -95,11 +102,12 @@ public class VendingMachineServiceImpl implements VendingMachineService {
 
         List<Purchase> purchases = purchaseRepository.findByUserId(user.getId());
         long totalSpent = purchases.stream().mapToLong(Purchase::getTotalCost).sum();
-
-        return BuyResponseDto.builder()
+        BuyResponseDto buyResponseDto = BuyResponseDto.builder()
                 .totalSpent(totalSpent)
                 .purchases(purchases)
                 .build();
+        LOG.info("The product has been purchased.");
+        return buyResponseDto;
     }
 
 }

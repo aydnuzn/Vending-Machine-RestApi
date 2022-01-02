@@ -1,5 +1,7 @@
 package com.exercise.vendingmachine.exception;
 
+import com.exercise.vendingmachine.config.FilterConfig;
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +12,8 @@ import java.util.Date;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger LOG = Logger.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorObject> entityNotFoundException(EntityNotFoundException ex, WebRequest request) {
         ErrorObject message = new ErrorObject(
@@ -17,7 +21,7 @@ public class GlobalExceptionHandler {
                 new Date(),
                 ex.getMessage(),
                 request.getDescription(false));
-
+        LOG.error(ex.getMessage());
         return new ResponseEntity<ErrorObject>(message, HttpStatus.NOT_FOUND);
     }
 
@@ -28,7 +32,7 @@ public class GlobalExceptionHandler {
                 new Date(),
                 ex.getMessage(),
                 request.getDescription(false));
-
+        LOG.error(ex.getMessage());
         return new ResponseEntity<ErrorObject>(message, HttpStatus.FORBIDDEN);
     }
 
@@ -39,7 +43,7 @@ public class GlobalExceptionHandler {
                 new Date(),
                 ex.getMessage(),
                 request.getDescription(false));
-
+        LOG.error(ex.getMessage());
         return new ResponseEntity<ErrorObject>(message, HttpStatus.UNAUTHORIZED);
     }
 
@@ -50,7 +54,7 @@ public class GlobalExceptionHandler {
                 new Date(),
                 ex.getMessage(),
                 request.getDescription(false));
-
+        LOG.error(ex.getMessage());
         return new ResponseEntity<ErrorObject>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

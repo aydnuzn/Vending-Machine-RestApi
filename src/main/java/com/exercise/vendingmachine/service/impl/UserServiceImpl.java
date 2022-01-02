@@ -7,18 +7,17 @@ import com.exercise.vendingmachine.exception.EntityNotFoundException;
 import com.exercise.vendingmachine.model.User;
 import com.exercise.vendingmachine.repository.UserRepository;
 import com.exercise.vendingmachine.service.UserService;
-//import org.springframework.security.access.AccessDeniedException;
+import org.apache.log4j.Logger;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-//import javax.persistence.EntityNotFoundException;
-
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
 
     public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository) {
@@ -32,21 +31,25 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User createUser(UserDto userDto) {
+
         User user = User.builder()
                 .username(userDto.getUsername())
                 .password(bCryptPasswordEncoder.encode(userDto.getPassword()))
                 .deposit(0L)
                 .role(userDto.getRole())
                 .build();
-
-        return this.userRepository.save(user);
+        user = this.userRepository.save(user);
+        LOG.info("USER CREATED");
+        return user;
     }
 
     @Override
     public User getUser(UserDetailsDto userDetailsDto, Long userId) {
         checkUserPermission(userDetailsDto, userId);
-        return this.userRepository.findById(userId)
+        User user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
+        LOG.info("User Fetch Successfully.");
+        return user;
     }
 
     @Override
@@ -57,9 +60,10 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
         user.setUsername(userDto.getUsername());
         user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-        // user.setDeposit(userDto.getDeposit());
         user.setRole(userDto.getRole());
-        return this.userRepository.saveAndFlush(user);
+        user = this.userRepository.saveAndFlush(user);
+        LOG.info("User Updated");
+        return user;
     }
 
     @Override
@@ -69,6 +73,7 @@ public class UserServiceImpl implements UserService {
         User user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
         this.userRepository.delete(user);
+        LOG.info("User Deleted");
         return user;
     }
 
